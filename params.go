@@ -31,6 +31,8 @@ type LMOTSOpts struct {
 	ls uint8
 	// a SHAKE variant version of SHA3
 	sha sha3.ShakeHash
+	// key identifier: leave empty now
+	II [16]byte
 }
 
 func newLMOTSOpts(typecode uint8) *LMOTSOpts {
