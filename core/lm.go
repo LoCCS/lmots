@@ -109,3 +109,8 @@ func GenerateKey(opts *LMOpts, rng io.Reader) (*PrivateKey, error) {
 
 	return sk, nil
 }
+
+// Sign generates the signature for a message digest
+func Sign(sk *PrivateKey, hash []byte) (*Sig, error) {
+	return nil, nil
+}
