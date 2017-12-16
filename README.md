@@ -1,25 +1,42 @@
-# The Leighton-Micali One-Time Signature  
+# The Leighton-Micali One-Time Signature [LM-OTS]  
 
-## Interfaces  
+![version tag](https://img.shields.io/badge/lmots-v0.1-blue.svg) 
+![build status](https://img.shields.io/badge/build-passing-brightgreen.svg)  
 
-interfaces | input | output
-----------:|:-----:|:-------
-key generation  | indication of parameters  | (sk,pk) 
-signing         | msg, sk                   | sig, sk'  
-verification    | pk, msg, sigma            | true/false
+Copyright (c) 2017-2018 LoCCS.  
+Project to implement the Leighton-Micali one-time signature scheme according to [Hash-Based Signatures: draft-mcgrew-hash-sigs-08](https://datatracker.ietf.org/doc/draft-mcgrew-hash-sigs/).  
 
-## Security String  
+## Contents  
++ [Requirement](#requirement)  
++ [Installation](#installation)  
++ [Usage](#usage)  
++ [Contributing](#contrib)  
++ [Development Resources](#dev-res)  
 
-fields  | byte range  | meaning 
-:------:|:-----------:|:--------:
-I       | 0-15        | id for LMS sk/pk
-r/q     | 16-19       | r is the index of particular node in the hash tree, q is index of leaf,
-D       | 20-21       | domain separation parameter, determines either r or q to use
-j       | 22          | idx of component in sk, present if D in [0,264]
-C       | 22-(21+n)   | n-byte randomizer, present if D=D_MESG
+## Requirement  
++ git  
++ go 1.9+  
 
+are required to compile the library.
 
+<a name="installation"></a>
+## Installation  
+```bash
+$ go get -u github.com/LoCCS/lmots
+```
 
+<a name="usage"></a>
+## Usage  
 
-## References  
-+ [Hash-Based Signatures: draft-mcgrew-hash-sigs-08](https://datatracker.ietf.org/doc/draft-mcgrew-hash-sigs/)  
+<a name="contrib"></a>
+## Contributing  
+Kind advices and contributions are always welcomed, but to avoid chaos or destabilizing in existing work, we have processes that bring people in gradually. In general the process is:  
+
++ Find a specific **bug** you'd like to fix or a specific **feature** you’d like to add (check out the issues list if to get some ideas)  
++ Fix the bug in your own clone and **ensure that it's working**   
++ Submit the change to the master branch via a **pull request**  
+
+<a name="dev-res"></a>
+## Development Resources  
++ [Github](https://github.com/LoCCS/lmots)  
+
