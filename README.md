@@ -1,6 +1,6 @@
 # The Leighton-Micali One-Time Signature [LM-OTS]  
 
-![version tag](https://img.shields.io/badge/lmots-v0.1-blue.svg) 
+![version tag](https://img.shields.io/badge/lmots-v1.0-blue.svg) 
 ![build status](https://img.shields.io/badge/build-passing-brightgreen.svg)  
 
 Copyright (c) 2017-2018 LoCCS.  
