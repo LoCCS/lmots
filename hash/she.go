@@ -6,6 +6,8 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
+// ShakeHashEx extends the sha3.ShakeHash,
+// able to taking in uint32, uint16, uint8
 type ShakeHashEx struct {
 	sha3.ShakeHash
 }
@@ -16,7 +18,8 @@ func NewShakeHashEx() *ShakeHashEx {
 	}
 }
 
-//func (sh *ShakeHashEx) ReadUint32(x uint32) {
+// WriteUint32 takes in an uint32 to update its
+// internal state
 func (sh *ShakeHashEx) WriteUint32(x uint32) {
 	var buf [4]byte
 
@@ -24,6 +27,8 @@ func (sh *ShakeHashEx) WriteUint32(x uint32) {
 	sh.Write(buf[:])
 }
 
+// WriteUint32 takes in an uint16 to update its
+// internal state
 func (sh *ShakeHashEx) WriteUint16(x uint16) {
 	var buf [2]byte
 
@@ -31,10 +36,13 @@ func (sh *ShakeHashEx) WriteUint16(x uint16) {
 	sh.Write(buf[:])
 }
 
+// WriteUint32 takes in an uint8 to update its
+// internal state
 func (sh *ShakeHashEx) WriteUint8(x uint8) {
 	sh.Write([]byte{uint8(x)})
 }
 
+// Clone makes a copy of ShakeHashEx
 func (sh *ShakeHashEx) Clone() *ShakeHashEx {
 	return &ShakeHashEx{
 		ShakeHash: sh.ShakeHash.Clone(),

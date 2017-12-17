@@ -90,9 +90,6 @@ func GenerateKey(opts *LMOpts, rng io.Reader) (*PrivateKey, error) {
 	// wait until all y[j] has been computed
 	wg.Wait()
 
-	//fmt.Println("**********keygen")
-	//fmt.Printf("I:%x\n", opts.I)
-	//fmt.Printf("keyIdx:%v\n", sk.keyIdx)
 	// calculate K
 	she.Reset()
 	she.Write(sk.I[:])
@@ -100,13 +97,9 @@ func GenerateKey(opts *LMOpts, rng io.Reader) (*PrivateKey, error) {
 	she.WriteUint16(D_PBLC)
 	for j := range Ys {
 		she.Write(Ys[j])
-		//fmt.Printf("Ys[%v]=%x\n", j, Ys[j])
 	}
 	sk.PublicKey.K = make(HashType, METAOPTS_DEFAULT.n)
 	she.Read(sk.PublicKey.K)
-	//fmt.Println("**********")
-
-	//fmt.Printf("K: %x\n", sk.PublicKey.K)
 
 	return sk, nil
 }
@@ -123,89 +116,21 @@ func Sign(rng io.Reader, sk *PrivateKey, msg HashType) (*Sig, error) {
 		return nil, errors.New("failed to get a valid randomizer")
 	}
 
-	// Q
-	extMsg := extendMsg(sk.LMOpts, sig.C, msg, METAOPTS_DEFAULT.w, METAOPTS_DEFAULT.ls)
-	//fmt.Printf("extMsg: %x\n", extMsg)
-
-	var wg sync.WaitGroup
-	numCPU := uint8(runtime.NumCPU())
-	ell := uint8(len(sk.x))
-	jobSize := (ell + numCPU - 1) / numCPU
-
-	sig.sigma = make([]HashType, ell)
-	for k := uint8(0); k < numCPU; k++ {
-		wg.Add(1)
-		// worker
-		go func(workerIdx uint8) {
-			defer wg.Done()
-			// range of blocks evaluated by current worker
-			from := workerIdx * jobSize
-			to := from + jobSize
-			if to > ell {
-				to = ell
-			}
-
-			for i := from; i < to; i++ {
-				a := coef(extMsg, uint16(i), METAOPTS_DEFAULT.w)
-				if 0 == i {
-					//fmt.Printf("a0=%v\n", a)
-				}
-				sig.sigma[i] = evalChaining(sk.LMOpts, uint16(i), 0, a, sk.x[i])
-			}
-		}(k)
-	}
-
-	// synchronise all verification of Y[j]
-	wg.Wait()
+	// run the chaining iterations to generate the signature
+	sig.sigma = batchChaining(sk.LMOpts, sig.C, msg, sk.x, true)
 
 	return sig, nil
 }
 
+// Verify checks the signature on msg against the given public key
 func Verify(pk *PublicKey, msg HashType, sig *Sig) bool {
 	// ensure pktype=sigtype
 	if !bytes.Equal(pk.typecode[:], sig.typecode[:]) {
-		//fmt.Printf("pktype: %x, sigtype: %x\n", pk.typecode[:], sig.typecode[:])
 		return false
 	}
 
-	// Q
-	extMsg := extendMsg(pk.LMOpts, sig.C, msg, METAOPTS_DEFAULT.w, METAOPTS_DEFAULT.ls)
-	//fmt.Printf("extMsg: %x\n", extMsg)
+	Ys := batchChaining(pk.LMOpts, sig.C, msg, sig.sigma, false)
 
-	var wg sync.WaitGroup
-	numCPU := uint8(runtime.NumCPU())
-	ell := uint8(len(sig.sigma))
-	jobSize := (ell + numCPU - 1) / numCPU
-
-	wtnMask := uint8((1 << METAOPTS_DEFAULT.w) - 1)
-	Ys := make([]HashType, ell)
-
-	for k := uint8(0); k < numCPU; k++ {
-		wg.Add(1)
-		// worker
-		go func(workerIdx uint8) {
-			defer wg.Done()
-			// range of blocks evaluated by current worker
-			from := workerIdx * jobSize
-			to := from + jobSize
-			if to > ell {
-				to = ell
-			}
-
-			for i := from; i < to; i++ {
-				a := coef(extMsg, uint16(i), METAOPTS_DEFAULT.w)
-				if 0 == i {
-					//fmt.Printf("a0=%v\n", a)
-				}
-				Ys[i] = evalChaining(pk.LMOpts, uint16(i), a, wtnMask, sig.sigma[i])
-			}
-		}(k)
-	}
-	wg.Wait()
-
-	//fmt.Println("*******")
-	//fmt.Printf("I: %x\n", pk.I[:])
-	//fmt.Printf("keyIdx: %v\n", pk.keyIdx)
 	// Kc
 	sh := hash.NewShakeHashEx()
 	sh.Write(pk.I[:])
@@ -213,14 +138,51 @@ func Verify(pk *PublicKey, msg HashType, sig *Sig) bool {
 	sh.WriteUint16(D_PBLC)
 	for j := range Ys {
 		sh.Write(Ys[j])
-		//fmt.Printf("Ys[%v]=%x\n", j, Ys[j])
 	}
 	Kc := make(HashType, METAOPTS_DEFAULT.n)
 	sh.Read(Kc)
-	//fmt.Println("*******")
-
-	//fmt.Printf("K=%x\n", pk.K)
-	//fmt.Printf("Kc=%x\n", Kc)
 
 	return bytes.Equal(Kc, pk.K)
+}
+
+// batchChaining evaluates Winternitz chain in batch
+func batchChaining(opts *LMOpts, C []byte, msg HashType,
+	Zs []HashType, isSigning bool) []HashType {
+	// Q
+	extMsg := extendMsg(opts, C, msg, METAOPTS_DEFAULT.w, METAOPTS_DEFAULT.ls)
+
+	var lo, hi uint8 = 0, ((1 << METAOPTS_DEFAULT.w) - 1)
+	ell := uint8(len(Zs))
+	outs := make([]HashType, ell)
+
+	var wg sync.WaitGroup
+	numCPU := uint8(runtime.NumCPU())
+	jobSize := (ell + numCPU - 1) / numCPU
+	for k := uint8(0); k < numCPU; k++ {
+		wg.Add(1)
+		// worker
+		go func(workerIdx uint8) {
+			defer wg.Done()
+			// range of blocks evaluated by current worker
+			from := workerIdx * jobSize
+			to := from + jobSize
+			if to > ell {
+				to = ell
+			}
+
+			for i := from; i < to; i++ {
+				// update the bound of chaining based on the situation
+				if isSigning { // signing
+					hi = coef(extMsg, uint16(i), METAOPTS_DEFAULT.w)
+				} else { // verification
+					lo = coef(extMsg, uint16(i), METAOPTS_DEFAULT.w)
+				}
+				outs[i] = evalChaining(opts, uint16(i), lo, hi, Zs[i])
+			}
+		}(k)
+	}
+	// wait for all outputs to be ready
+	wg.Wait()
+
+	return outs
 }

@@ -17,15 +17,22 @@ const (
 )
 
 const (
-	key_id_len = 16
+	key_id_len = 16 // length of key pair identifier
 )
 
+// LMOpts wraps options for key generations, signing
+// and verification
 type LMOpts struct {
+	// big-endian order bytes for LMOTS_SHAKE{shake}_N{n}_W{w}
+	// typecodes defined in params.go
 	typecode [4]byte
-	I        [key_id_len]byte
-	keyIdx   uint32
+	// key pair identifier
+	I [key_id_len]byte
+	// index of the current key pair
+	keyIdx uint32
 }
 
+// Clone makes a copy of this *LMOpts
 func (opts *LMOpts) Clone() *LMOpts {
 	optsC := *opts
 

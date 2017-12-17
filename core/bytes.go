@@ -4,10 +4,11 @@ import (
 	"github.com/LoCCS/lmots/hash"
 )
 
+// coef returns the i-th (counting from left)
+// w-bit integer parsed from S
 func coef(S []byte, i uint16, w uint8) uint8 {
 	w16 := uint16(w)
 	j := i * w16 / 8
-	//fmt.Println(len(S), j)
 
 	// number of bit to apply before masking
 	bits := 8 - ((i % (8 / w16) * w16) + w16)
@@ -15,6 +16,8 @@ func coef(S []byte, i uint16, w uint8) uint8 {
 	return (((1 << w) - 1) & uint8(S[j]>>bits))
 }
 
+// checksum calculates a 2-byte checksum of
+// the given hash msg
 func checksum(msg []byte, w, ls uint8) []byte {
 	var sum uint16
 
@@ -28,6 +31,7 @@ func checksum(msg []byte, w, ls uint8) []byte {
 	return []byte{byte((sum >> 8) & 0xff), byte(sum & 0xff)}
 }
 
+// extendMsg extends the msg and append the corresponding checksum
 func extendMsg(opts *LMOpts, C []byte, msg []byte, w, ls uint8) []byte {
 	sh := hash.NewShakeHashEx()
 

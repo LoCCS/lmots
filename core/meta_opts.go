@@ -47,8 +47,6 @@ func newMetaOpts(typecode uint8) *MetaOpts {
 	opts.p = uint8(u + v)
 	opts.ls = uint8(16 - v*w)
 
-	//opts.sha = sha3.NewShake256()
-
 	return opts
 }
 
