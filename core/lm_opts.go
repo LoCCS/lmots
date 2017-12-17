@@ -21,6 +21,13 @@ const (
 )
 
 type LMOpts struct {
-	I      [key_id_len]byte
-	keyIdx uint32
+	typecode [4]byte
+	I        [key_id_len]byte
+	keyIdx   uint32
+}
+
+func (opts *LMOpts) Clone() *LMOpts {
+	optsC := *opts
+
+	return &optsC
 }
