@@ -38,3 +38,8 @@ func (opts *LMOpts) Clone() *LMOpts {
 
 	return &optsC
 }
+
+// SetKeyIdx sets the index of underlying key
+func (opts *LMOpts) SetKeyIdx(i uint32) {
+	opts.keyIdx = i
+}
