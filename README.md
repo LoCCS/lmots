@@ -1,6 +1,6 @@
 # The Leighton-Micali One-Time Signature [LM-OTS]  
 
-![version tag](https://img.shields.io/badge/lmots-v1.0-blue.svg) 
+![version tag](https://img.shields.io/badge/lmots-v1.1-blue.svg) 
 ![build status](https://img.shields.io/badge/build-passing-brightgreen.svg)  
 
 Copyright (c) 2017-2018 LoCCS.  
@@ -11,6 +11,7 @@ Project to implement the Leighton-Micali one-time signature scheme according to 
 + [Installation](#installation)  
 + [Usage](#usage)  
 + [Contributing](#contrib)  
++ [License](#license)  
 + [Development Resources](#dev-res)  
 
 ## Requirement  
@@ -35,6 +36,10 @@ Kind advices and contributions are always welcomed, but to avoid chaos or destab
 + Find a specific **bug** you'd like to fix or a specific **feature** you’d like to add (check out the issues list if to get some ideas)  
 + Fix the bug in your own clone and **ensure that it's working**   
 + Submit the change to the master branch via a **pull request**  
+
+<a name="license"></a>
+## License  
+This project licensed under [MIT LICENSE](LICENSE)  
 
 <a name="dev-res"></a>
 ## Development Resources  

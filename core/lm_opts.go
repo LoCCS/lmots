@@ -1,6 +1,9 @@
 package lmots
 
-import "encoding/binary"
+import (
+	"bytes"
+	"encoding/binary"
+)
 
 // domain separation fields enumerators indicating the message to hash
 // - D_PBLC = 0x8080 when computing the hash of all of the iterates
@@ -48,6 +51,14 @@ func (opts *LMOpts) Clone() *LMOpts {
 	optsC := *opts
 
 	return &optsC
+}
+
+func (opts *LMOpts) Equal(rhs *LMOpts) bool {
+	if opts == rhs {
+		return true
+	}
+	return (nil != rhs) && bytes.Equal(opts.typecode[:], rhs.typecode[:]) &&
+		bytes.Equal(opts.I[:], rhs.I[:]) && (opts.keyIdx == rhs.keyIdx)
 }
 
 // SetKeyIdx sets the index of underlying key

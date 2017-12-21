@@ -24,10 +24,7 @@ func TestLMOptsSerialize(t *testing.T) {
 	opts.keyIdx = 0x1234
 	opts.I[2] = 0x56
 
-	t.Log("hello")
 	buf := opts.Serialize()
-
-	t.Logf("%x\n", buf)
 
 	opts2 := new(LMOpts)
 	opts2.Deserialize(buf)

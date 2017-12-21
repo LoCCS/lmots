@@ -3,6 +3,7 @@ package lmots
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"runtime"
 	"sync"
@@ -18,11 +19,41 @@ type PublicKey struct {
 	K HashType // hash of public key components
 }
 
+func (pk *PublicKey) Clone() *PublicKey {
+	pkC := new(PublicKey)
+
+	pkC.LMOpts = pk.LMOpts.Clone()
+	if nil != pk.K {
+		pkC.K = make(HashType, len(pk.K))
+		copy(pkC.K, pk.K)
+	}
+
+	return pkC
+}
+func (pk *PublicKey) Equal(rhs *PublicKey) bool {
+	if pk == rhs {
+		return true
+	}
+
+	return (nil != rhs) &&
+		((pk.LMOpts == rhs.LMOpts) ||
+			((nil != pk.LMOpts) && (pk.LMOpts.Equal(rhs.LMOpts)))) &&
+		bytes.Equal(pk.K, rhs.K)
+}
+
 // PrivateKey as container for private key,
 //	it also embeds its corresponding public key
 type PrivateKey struct {
 	PublicKey
 	x []HashType
+}
+
+func (sk *PrivateKey) Equal(rhs *PrivateKey) bool {
+	if sk == rhs {
+		return true
+	}
+
+	return (nil != rhs) && (&sk.PublicKey).Equal(&rhs.PublicKey)
 }
 
 // Sig as container for the Winternitz one-time signature
@@ -126,6 +157,7 @@ func Sign(rng io.Reader, sk *PrivateKey, msg HashType) (*Sig, error) {
 func Verify(pk *PublicKey, msg HashType, sig *Sig) bool {
 	// ensure pktype=sigtype
 	if !bytes.Equal(pk.typecode[:], sig.typecode[:]) {
+		fmt.Printf("mismatched typecode: want %x, got %x\n", pk.typecode[:], sig.typecode[:])
 		return false
 	}
 
