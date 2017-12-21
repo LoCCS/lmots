@@ -1,5 +1,7 @@
 package lmots
 
+import "encoding/binary"
+
 // domain separation fields enumerators indicating the message to hash
 // - D_PBLC = 0x8080 when computing the hash of all of the iterates
 // 	in the LM-OTS algorithm
@@ -32,6 +34,15 @@ type LMOpts struct {
 	keyIdx uint32
 }
 
+func NewLMOpts() *LMOpts {
+	opts := new(LMOpts)
+
+	opts.typecode = METAOPTS_DEFAULT.typecode
+	opts.keyIdx = 0
+
+	return opts
+}
+
 // Clone makes a copy of this *LMOpts
 func (opts *LMOpts) Clone() *LMOpts {
 	optsC := *opts
@@ -42,4 +53,64 @@ func (opts *LMOpts) Clone() *LMOpts {
 // SetKeyIdx sets the index of underlying key
 func (opts *LMOpts) SetKeyIdx(i uint32) {
 	opts.keyIdx = i
+}
+
+// SetKeyID sets the identifier for the underlying key
+func (opts *LMOpts) SetKeyID(I []byte) {
+	if len(I) != key_id_len {
+		panic("invalid key id length")
+	}
+
+	copy(opts.I[:], I)
+}
+
+func (opts *LMOpts) Serialize() []byte {
+	buf := make([]byte, 1+4+1+key_id_len+1+4)
+	offset := 0
+
+	// len(typecode)|typecode
+	buf[offset] = 4
+	offset++
+	copy(buf[offset:], opts.typecode[:])
+	offset += 4
+
+	// len(I)|I
+	buf[offset] = uint8(key_id_len)
+	offset++
+	copy(buf[offset:], opts.I[:])
+	offset += key_id_len
+
+	// len(keyIdx)|keyIdx
+	buf[offset] = 4
+	offset++
+	binary.BigEndian.PutUint32(buf[offset:], opts.keyIdx)
+
+	return buf
+}
+
+func (opts *LMOpts) Deserialize(buf []byte) bool {
+	var offset uint8 // := 0
+
+	ell := buf[offset]
+	offset += 1
+	if 4 != ell {
+		return false
+		//panic("invalid length of typecode")
+	}
+	copy(opts.typecode[:], buf[offset:(offset+ell)])
+	offset += ell
+
+	ell = buf[offset]
+	offset++
+	if key_id_len != ell {
+		//panic("invalid length of key identifier")
+		return false
+	}
+	copy(opts.I[:], buf[offset:(offset+ell)])
+	offset += ell
+
+	ell = buf[offset]
+	offset++
+	opts.keyIdx = binary.BigEndian.Uint32(buf[offset:(offset + ell)])
+	return true
 }
