@@ -131,3 +131,8 @@ func (opts *LMOpts) Deserialize(buf []byte) bool {
 	opts.keyIdx = binary.BigEndian.Uint32(buf[offset:(offset + ell)])
 	return true
 }
+
+// Type returns the typecode of this options
+func (opts *LMOpts) Type() [4]byte {
+	return opts.typecode
+}
