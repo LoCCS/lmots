@@ -1,6 +1,6 @@
 # The Leighton-Micali One-Time Signature [LM-OTS]  
 
-![version tag](https://img.shields.io/badge/lmots-v1.1-blue.svg) 
+![version tag](https://img.shields.io/badge/lmots-v1.2-blue.svg) 
 ![build status](https://img.shields.io/badge/build-passing-brightgreen.svg)  
 
 Copyright (c) 2017-2018 LoCCS.  
@@ -31,7 +31,7 @@ $ go get -u github.com/LoCCS/lmots
 
 <a name="contrib"></a>
 ## Contributing  
-Kind advices and contributions are always welcomed, but to avoid chaos or destabilizing in existing work, we have processes that bring people in gradually. In general the process is:  
+Kind advices and contributions are always welcomed, but to avoid chaos or destabilization in existing work, we have processes that bring people in gradually. In general the process is:  
 
 + Find a specific **bug** you'd like to fix or a specific **feature** you’d like to add (check out the issues list if to get some ideas)  
 + Fix the bug in your own clone and **ensure that it's working**   
