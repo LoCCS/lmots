@@ -53,12 +53,18 @@ func (opts *LMOpts) Clone() *LMOpts {
 	return &optsC
 }
 
+// Equal checks the equality of two options
 func (opts *LMOpts) Equal(rhs *LMOpts) bool {
 	if opts == rhs {
 		return true
 	}
 	return (nil != rhs) && bytes.Equal(opts.typecode[:], rhs.typecode[:]) &&
 		bytes.Equal(opts.I[:], rhs.I[:]) && (opts.keyIdx == rhs.keyIdx)
+}
+
+// KeyIdx returns the index assigned to this key
+func (opts *LMOpts) KeyIdx() {
+	return opts.keyIdx
 }
 
 // SetKeyIdx sets the index of underlying key
