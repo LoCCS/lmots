@@ -5,16 +5,14 @@ import (
 	"io"
 
 	"golang.org/x/crypto/sha3"
-
-	"github.com/LoCCS/lmots"
 )
 
 // Reader is a globally accessible PRNG (pseudo random number generator) instance
 var Reader io.Reader
 
-// init initializes some relevant parameters
+// init initializes the globally accessible PRNG
 func init() {
-	seed := make([]byte, lmots.N)
+	seed := make([]byte, 32)
 	// ignore error
 	rand.Read(seed)
 
@@ -37,13 +35,11 @@ func New(seed []byte) *Rand {
 	return rng
 }
 
-// Init reset the PRNG with the provided seed
-// so as to recover it a deterministic state
+// Init resets the PRNG with the provided seed
+// so as to recover it to a deterministic state
 func (rng *Rand) Init(seed []byte) {
-	if nil == rng.seed {
-		//rng.seed = make([]byte, config.Size)
-		rng.seed = make([]byte, lmots.N)
-	}
+	rng.seed = nil
+	rng.seed = make([]byte, len(seed))
 	copy(rng.seed, seed)
 
 	if nil == rng.sha {
@@ -52,7 +48,7 @@ func (rng *Rand) Init(seed []byte) {
 }
 
 // Read reads out len(p) random bytes
-//	and update the underlying state seed
+// and update the underlying state seed
 func (rng *Rand) Read(p []byte) (int, error) {
 	rng.sha.Reset()
 	rng.sha.Write(rng.seed)
