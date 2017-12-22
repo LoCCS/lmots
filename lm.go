@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/LoCCS/lmots/hash"
+	"encoding/binary"
 )
 
 type HashType []byte
@@ -294,4 +295,52 @@ func batchChaining(opts *LMOpts, C []byte, msg HashType,
 	wg.Wait()
 
 	return outs
+}
+
+//Serialize encodes the signature
+func (sig *Sig) Serialize() []byte{
+
+	cLen := len(sig.C)
+	sNum := len(sig.sigma)
+	size := 0
+	if sNum > 0 && sig.sigma[0] != nil {
+		size = len(sig.sigma[0])
+	}
+	sigBytes := make([]byte, 4 + 2 + cLen + 4 + sNum * size)
+	copy(sigBytes[0:4], sig.typecode[:])
+	binary.LittleEndian.PutUint16(sigBytes[4:6], uint16(cLen))
+	copy(sigBytes[6:6+cLen], sig.C)
+	offset := 6 + cLen
+	binary.LittleEndian.PutUint16(sigBytes[offset:offset+2], uint16(sNum))
+	binary.LittleEndian.PutUint16(sigBytes[offset+2:offset+4], uint16(size))
+	offset += 4
+	for _, s := range sig.sigma{
+		copy(sigBytes[offset: offset + size], s)
+		offset += size
+	}
+	return sigBytes
+}
+
+//Deserialize decodes the signature from bytes
+func DeserializeSig(sigBytes []byte) *Sig{
+	sig := &Sig{}
+	sig.typecode[0] = sigBytes[0]
+	sig.typecode[1] = sigBytes[1]
+	sig.typecode[2] = sigBytes[2]
+	sig.typecode[3] = sigBytes[3]
+
+	cLen := binary.LittleEndian.Uint16(sigBytes[4:6])
+	sig.C = make([]byte, cLen)
+	copy(sig.C, sigBytes[6:6+cLen])
+	offset := int(6 + cLen)
+	sNum := int(binary.LittleEndian.Uint16(sigBytes[offset:offset+2]))
+	size := int(binary.LittleEndian.Uint16(sigBytes[offset+2:offset+4]))
+	offset += 4
+	sigma := make([]HashType, sNum)
+	for i := 0; i < int(sNum); i++{
+		sigma[i] = sigBytes[offset : int(offset) + size]
+		offset += size
+	}
+	sig.sigma = sigma
+	return sig
 }
