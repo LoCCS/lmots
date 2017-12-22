@@ -3,7 +3,6 @@ package lmots
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"runtime"
 	"sync"
@@ -157,7 +156,7 @@ func Sign(rng io.Reader, sk *PrivateKey, msg HashType) (*Sig, error) {
 func Verify(pk *PublicKey, msg HashType, sig *Sig) bool {
 	// ensure pktype=sigtype
 	if !bytes.Equal(pk.typecode[:], sig.typecode[:]) {
-		fmt.Printf("mismatched typecode: want %x, got %x\n", pk.typecode[:], sig.typecode[:])
+		//fmt.Printf("mismatched typecode: want %x, got %x\n", pk.typecode[:], sig.typecode[:])
 		return false
 	}
 
