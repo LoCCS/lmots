@@ -3,21 +3,19 @@ package lmots
 import (
 	"bytes"
 	"testing"
-
-	"github.com/LoCCS/lmots"
 )
 
 func TestMetaOpts(t *testing.T) {
 	optsVecWanted := []*MetaOpts{
 		{
-			typecode: [4]byte{0, 0, 0, lmots.LMOTS_SHAKE256_N32_W2},
+			typecode: [4]byte{0, 0, 0, LMOTS_SHAKE256_N32_W2},
 			n:        32,
 			w:        2,
 			p:        133,
 			ls:       6,
 		},
 		{
-			typecode: [4]byte{0, 0, 0, lmots.LMOTS_SHAKE256_N32_W4},
+			typecode: [4]byte{0, 0, 0, LMOTS_SHAKE256_N32_W4},
 			n:        32,
 			w:        4,
 			p:        67,

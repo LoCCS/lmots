@@ -3,7 +3,7 @@ package lmots
 import (
 	"testing"
 
-	lmotsrand "github.com/LoCCS/lmots/rand"
+	"github.com/LoCCS/lmots/rand"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -12,9 +12,9 @@ func TestLMSig(t *testing.T) {
 
 	dummyOpts := new(LMOpts)
 	dummyOpts.typecode = METAOPTS_DEFAULT.typecode
-	sk, _ := GenerateKey(dummyOpts, lmotsrand.Reader)
+	sk, _ := GenerateKey(dummyOpts, rand.Reader)
 
-	sig, err := Sign(lmotsrand.Reader, sk, hash[:])
+	sig, err := Sign(rand.Reader, sk, hash[:])
 	if nil != err {
 		t.Fatal(err)
 	}
@@ -29,9 +29,9 @@ func TestLMSigBadPk(t *testing.T) {
 
 	dummyOpts := new(LMOpts)
 	dummyOpts.typecode = METAOPTS_DEFAULT.typecode
-	sk, _ := GenerateKey(dummyOpts, lmotsrand.Reader)
+	sk, _ := GenerateKey(dummyOpts, rand.Reader)
 
-	sig, err := Sign(lmotsrand.Reader, sk, hash[:])
+	sig, err := Sign(rand.Reader, sk, hash[:])
 	if nil != err {
 		t.Fatal(err)
 	}

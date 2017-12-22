@@ -12,6 +12,7 @@ type ShakeHashEx struct {
 	sha3.ShakeHash
 }
 
+// NewShakeHashEx makes the ShakeHashEx
 func NewShakeHashEx() *ShakeHashEx {
 	return &ShakeHashEx{
 		ShakeHash: sha3.NewShake256(),

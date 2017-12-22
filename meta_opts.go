@@ -3,8 +3,6 @@ package lmots
 import (
 	"encoding/binary"
 	"math"
-
-	"github.com/LoCCS/lmots"
 )
 
 type MetaOpts struct {
@@ -24,10 +22,10 @@ func newMetaOpts(typecode uint8) *MetaOpts {
 	opts := new(MetaOpts)
 
 	switch typecode {
-	case lmots.LMOTS_SHAKE256_N32_W2:
+	case LMOTS_SHAKE256_N32_W2:
 		opts.n = 32
 		opts.w = 2
-	case lmots.LMOTS_SHAKE256_N32_W4:
+	case LMOTS_SHAKE256_N32_W4:
 		opts.n = 32
 		opts.w = 4
 	default:
@@ -61,8 +59,8 @@ var METAOPTS_SHAKE256_N32_W2, METAOPTS_SHAKE256_N32_W4 *MetaOpts
 var METAOPTS_DEFAULT *MetaOpts
 
 func init() {
-	METAOPTS_SHAKE256_N32_W2 = newMetaOpts(lmots.LMOTS_SHAKE256_N32_W2)
-	METAOPTS_SHAKE256_N32_W4 = newMetaOpts(lmots.LMOTS_SHAKE256_N32_W4)
+	METAOPTS_SHAKE256_N32_W2 = newMetaOpts(LMOTS_SHAKE256_N32_W2)
+	METAOPTS_SHAKE256_N32_W4 = newMetaOpts(LMOTS_SHAKE256_N32_W4)
 
 	METAOPTS_DEFAULT = METAOPTS_SHAKE256_N32_W4
 }
