@@ -7,7 +7,6 @@ import (
 	"golang.org/x/crypto/sha3"
 
 	"github.com/LoCCS/lmots"
-	"github.com/LoCCS/mss/config"
 )
 
 // Reader is a globally accessible PRNG (pseudo random number generator) instance
@@ -42,7 +41,8 @@ func New(seed []byte) *Rand {
 // so as to recover it a deterministic state
 func (rng *Rand) Init(seed []byte) {
 	if nil == rng.seed {
-		rng.seed = make([]byte, config.Size)
+		//rng.seed = make([]byte, config.Size)
+		rng.seed = make([]byte, lmots.N)
 	}
 	copy(rng.seed, seed)
 
