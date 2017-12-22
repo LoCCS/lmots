@@ -63,7 +63,7 @@ func (opts *LMOpts) Equal(rhs *LMOpts) bool {
 }
 
 // KeyIdx returns the index assigned to this key
-func (opts *LMOpts) KeyIdx() {
+func (opts *LMOpts) KeyIdx() uint32 {
 	return opts.keyIdx
 }
 
