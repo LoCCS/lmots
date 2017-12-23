@@ -37,6 +37,8 @@ type LMOpts struct {
 	keyIdx uint32
 }
 
+// NewLMOpts makes an LM-OTS option with default `typecode`
+// and `keyIdx` as 0
 func NewLMOpts() *LMOpts {
 	opts := new(LMOpts)
 
@@ -81,6 +83,7 @@ func (opts *LMOpts) SetKeyID(I []byte) {
 	copy(opts.I[:], I)
 }
 
+// Serialize encodes the given option into byte slice
 func (opts *LMOpts) Serialize() []byte {
 	buf := make([]byte, 1+4+1+key_id_len+1+4)
 	offset := 0
@@ -105,14 +108,14 @@ func (opts *LMOpts) Serialize() []byte {
 	return buf
 }
 
+// Deserialize initialises the option with the given byte slice
 func (opts *LMOpts) Deserialize(buf []byte) bool {
-	var offset uint8 // := 0
+	var offset uint8
 
 	ell := buf[offset]
 	offset += 1
 	if 4 != ell {
 		return false
-		//panic("invalid length of typecode")
 	}
 	copy(opts.typecode[:], buf[offset:(offset+ell)])
 	offset += ell
@@ -120,7 +123,6 @@ func (opts *LMOpts) Deserialize(buf []byte) bool {
 	ell = buf[offset]
 	offset++
 	if key_id_len != ell {
-		//panic("invalid length of key identifier")
 		return false
 	}
 	copy(opts.I[:], buf[offset:(offset+ell)])
@@ -129,6 +131,7 @@ func (opts *LMOpts) Deserialize(buf []byte) bool {
 	ell = buf[offset]
 	offset++
 	opts.keyIdx = binary.BigEndian.Uint32(buf[offset:(offset + ell)])
+
 	return true
 }
 

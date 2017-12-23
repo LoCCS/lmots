@@ -5,6 +5,8 @@ import (
 	"math"
 )
 
+// MetaOpts is a container for the parameter set specification
+// of LM-OTS
 type MetaOpts struct {
 	typecode [4]byte
 	// the number of bytes of the output of the hash function
@@ -18,6 +20,7 @@ type MetaOpts struct {
 	ls uint8
 }
 
+// newMetaOpts makes a parameter set based on the given typecode
 func newMetaOpts(typecode uint8) *MetaOpts {
 	opts := new(MetaOpts)
 

@@ -3,13 +3,13 @@ package lmots
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"runtime"
 	"sync"
 
-	"github.com/LoCCS/lmots/hash"
 	"encoding/binary"
+
+	"github.com/LoCCS/lmots/hash"
 )
 
 type HashType []byte
@@ -18,29 +18,9 @@ type HashType []byte
 type PublicKey struct {
 	*LMOpts
 	K HashType // hash of public key components
-	//y []HashType
 }
 
-/*
-func (pk *PublicKey) String() string {
-	ss := "{\n"
-	ss += fmt.Sprintf(" K: %x,\n", pk.K)
-	ss += " opts: {\n"
-	ss += fmt.Sprintf("  typecode: %x,\n", pk.LMOpts.typecode[:])
-	ss += fmt.Sprintf("  I: %x,\n", pk.LMOpts.I[:])
-	ss += fmt.Sprintf("  keyIdx: %v,\n", pk.LMOpts.keyIdx)
-	ss += " },\n"
-	ss += fmt.Sprintf(" y: [")
-	for _, y := range pk.y {
-		ss += fmt.Sprintf("  %x,\n", y)
-	}
-	ss += fmt.Sprintf("],\n")
-	ss += "}"
-
-	return ss
-}
-*/
-
+// Clone makes a copy of this pk
 func (pk *PublicKey) Clone() *PublicKey {
 	pkC := new(PublicKey)
 
@@ -48,17 +28,12 @@ func (pk *PublicKey) Clone() *PublicKey {
 	if nil != pk.K {
 		pkC.K = make(HashType, len(pk.K))
 		copy(pkC.K, pk.K)
-
-		/*
-			pkC.y = make([]HashType, len(pk.y))
-			for i, y := range pk.y {
-				pkC.y[i] = make(HashType, len(y))
-				copy(pkC.y[i], y)
-			}*/
 	}
 
 	return pkC
 }
+
+// Equal checks if this `pk` equals to `rhs`
 func (pk *PublicKey) Equal(rhs *PublicKey) bool {
 	if pk == rhs {
 		return true
@@ -71,12 +46,13 @@ func (pk *PublicKey) Equal(rhs *PublicKey) bool {
 }
 
 // PrivateKey as container for private key,
-//	it also embeds its corresponding public key
+// it also embeds its corresponding public key
 type PrivateKey struct {
 	PublicKey
 	x []HashType
 }
 
+// Equal checks if this key equals to the given one
 func (sk *PrivateKey) Equal(rhs *PrivateKey) bool {
 	if sk == rhs {
 		return true
@@ -85,21 +61,6 @@ func (sk *PrivateKey) Equal(rhs *PrivateKey) bool {
 	return (nil != rhs) && (&sk.PublicKey).Equal(&rhs.PublicKey)
 }
 
-/*
-func (sk *PrivateKey) String() string {
-	ss := "{\n"
-	ss += " x: {\n"
-	for _, x := range sk.x {
-		ss += fmt.Sprintf("  %x,\n", x)
-	}
-	ss += " },\n"
-	ss += sk.PublicKey.String()
-	ss += ",\n}"
-
-	return ss
-}
-*/
-
 // Sig as container for the Winternitz one-time signature
 type Sig struct {
 	typecode [4]byte
@@ -107,19 +68,7 @@ type Sig struct {
 	sigma    []HashType
 }
 
-func (sig *Sig) String() string {
-	ss := "{\n"
-	ss += fmt.Sprintf(" typecode: %x,\n", sig.typecode[:])
-	ss += fmt.Sprintf(" C: %x,\n", sig.C)
-	ss += " sigma: {\n"
-	for _, z := range sig.sigma {
-		ss += fmt.Sprintf("  %x,\n", z)
-	}
-	ss += " },\n}"
-
-	return ss
-}
-
+// GenerateKey generates a key pair
 func GenerateKey(opts *LMOpts, rng io.Reader) (*PrivateKey, error) {
 	sk := new(PrivateKey)
 	sk.x = make([]HashType, METAOPTS_DEFAULT.p)
@@ -188,7 +137,6 @@ func GenerateKey(opts *LMOpts, rng io.Reader) (*PrivateKey, error) {
 	}
 	sk.PublicKey.K = make(HashType, METAOPTS_DEFAULT.n)
 	she.Read(sk.PublicKey.K)
-	//sk.PublicKey.y = Ys
 
 	return sk, nil
 }
@@ -215,7 +163,6 @@ func Sign(rng io.Reader, sk *PrivateKey, msg HashType) (*Sig, error) {
 func Verify(pk *PublicKey, msg HashType, sig *Sig) bool {
 	// ensure pktype=sigtype
 	if !bytes.Equal(pk.typecode[:], sig.typecode[:]) {
-		fmt.Printf("mismatched typecode: want %x, got %x\n", pk.typecode[:], sig.typecode[:])
 		return false
 	}
 
@@ -232,23 +179,6 @@ func Verify(pk *PublicKey, msg HashType, sig *Sig) bool {
 	Kc := make(HashType, METAOPTS_DEFAULT.n)
 	sh.Read(Kc)
 
-	/*
-		if !bytes.Equal(Kc, pk.K) {
-			fmt.Printf("invalid Kc, want %x, got %x\n", pk.K, Kc)
-			//fmt.Println("pk: {")
-			//fmt.Println(" ", pk)
-			//fmt.Println("}")
-				fmt.Println("Y': [")
-				for _, y := range Ys {
-					fmt.Printf("   %x,\n", y)
-				}
-			for i := range Ys {
-				if !bytes.Equal(pk.y[i], Ys[i]) {
-					fmt.Printf("%v: wants %x, got %x\n", i, pk.y[i], Ys[i])
-				}
-			}
-			fmt.Println("]\n}")
-		}*/
 	return bytes.Equal(Kc, pk.K)
 }
 
@@ -298,7 +228,7 @@ func batchChaining(opts *LMOpts, C []byte, msg HashType,
 }
 
 //Serialize encodes the signature
-func (sig *Sig) Serialize() []byte{
+func (sig *Sig) Serialize() []byte {
 
 	cLen := len(sig.C)
 	sNum := len(sig.sigma)
@@ -306,7 +236,7 @@ func (sig *Sig) Serialize() []byte{
 	if sNum > 0 && sig.sigma[0] != nil {
 		size = len(sig.sigma[0])
 	}
-	sigBytes := make([]byte, 4 + 2 + cLen + 4 + sNum * size)
+	sigBytes := make([]byte, 4+2+cLen+4+sNum*size)
 	copy(sigBytes[0:4], sig.typecode[:])
 	binary.LittleEndian.PutUint16(sigBytes[4:6], uint16(cLen))
 	copy(sigBytes[6:6+cLen], sig.C)
@@ -314,15 +244,15 @@ func (sig *Sig) Serialize() []byte{
 	binary.LittleEndian.PutUint16(sigBytes[offset:offset+2], uint16(sNum))
 	binary.LittleEndian.PutUint16(sigBytes[offset+2:offset+4], uint16(size))
 	offset += 4
-	for _, s := range sig.sigma{
-		copy(sigBytes[offset: offset + size], s)
+	for _, s := range sig.sigma {
+		copy(sigBytes[offset:offset+size], s)
 		offset += size
 	}
 	return sigBytes
 }
 
 //Deserialize decodes the signature from bytes
-func DeserializeSig(sigBytes []byte) *Sig{
+func DeserializeSig(sigBytes []byte) *Sig {
 	sig := &Sig{}
 	sig.typecode[0] = sigBytes[0]
 	sig.typecode[1] = sigBytes[1]
@@ -333,12 +263,12 @@ func DeserializeSig(sigBytes []byte) *Sig{
 	sig.C = make([]byte, cLen)
 	copy(sig.C, sigBytes[6:6+cLen])
 	offset := int(6 + cLen)
-	sNum := int(binary.LittleEndian.Uint16(sigBytes[offset:offset+2]))
-	size := int(binary.LittleEndian.Uint16(sigBytes[offset+2:offset+4]))
+	sNum := int(binary.LittleEndian.Uint16(sigBytes[offset : offset+2]))
+	size := int(binary.LittleEndian.Uint16(sigBytes[offset+2 : offset+4]))
 	offset += 4
 	sigma := make([]HashType, sNum)
-	for i := 0; i < int(sNum); i++{
-		sigma[i] = sigBytes[offset : int(offset) + size]
+	for i := 0; i < int(sNum); i++ {
+		sigma[i] = sigBytes[offset : int(offset)+size]
 		offset += size
 	}
 	sig.sigma = sigma

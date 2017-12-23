@@ -25,12 +25,11 @@ func evalChaining(opts *LMOpts, i uint16,
 	iterIdx := len(prefix) - 1
 	for j := lo; j < hi; j++ {
 		sh.Reset()
-		// out = H(prefix|j|out)
 		prefix[iterIdx] = j
 		sh.Write(prefix)
-		//sh.WriteUint8(j)
 		sh.Write(out)
 
+		// out = H(prefix|j|out)
 		sh.Read(out)
 	}
 
