@@ -5,6 +5,8 @@ import (
 	"crypto/rand"
 	"encoding/gob"
 	"testing"
+
+	lmrand "github.com/LoCCS/lmots/rand"
 )
 
 func TestLMOptsEncoding(t *testing.T) {
@@ -38,6 +40,31 @@ func TestLMOptsEncoding(t *testing.T) {
 	if opts.keyIdx != opts2.keyIdx {
 		t.Fatalf("invalid key index: want %v, got %v",
 			opts.keyIdx, opts2.keyIdx)
+	}
+}
+
+func TestPkEncoding(t *testing.T) {
+	dummyOpts := NewLMOpts()
+	sk, _ := GenerateKey(dummyOpts, lmrand.Reader)
+
+	pk := &sk.PublicKey
+	pk.keyIdx = 0x1234
+
+	buf := new(bytes.Buffer)
+	enc := gob.NewEncoder(buf)
+	if err := enc.Encode(pk); nil != err {
+		t.Fatal(err)
+	}
+
+	pk2 := new(PublicKey)
+	pk2.LMOpts = new(LMOpts)
+	dec := gob.NewDecoder(buf)
+	if err := dec.Decode(pk2); nil != err {
+		t.Fatal(err)
+	}
+
+	if !pk.Equal(pk2) {
+		t.Fatal("the decoded pubkey is invalid")
 	}
 }
 

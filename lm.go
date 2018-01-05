@@ -8,7 +8,6 @@ import (
 	"sync"
 
 	"encoding/binary"
-	"encoding/gob"
 
 	"github.com/LoCCS/lmots/hash"
 )
@@ -276,40 +275,30 @@ func DeserializeSig(sigBytes []byte) *Sig {
 	return sig
 }
 
-type sigEx struct {
-	Typecode [4]byte
-	C        []byte
-	Sigma    []HashType
-}
-
-func (sig Sig) GobEncode() ([]byte, error) {
-	sigC := &sigEx{
-		Typecode: sig.typecode,
-		C:        sig.C,
-		Sigma:    sig.sigma,
+// utilities functions to remove sooner or later
+func (sig *Sig) Equal(rhs *Sig) bool {
+	if nil == rhs {
+		return false
+	}
+	if sig == rhs {
+		return true
+	}
+	if !bytes.Equal(sig.typecode[:], rhs.typecode[:]) {
+		return false
+	}
+	if !bytes.Equal(sig.C, rhs.C) {
+		return false
 	}
 
-	buf := new(bytes.Buffer)
-	enc := gob.NewEncoder(buf)
-	if err := enc.Encode(sigC); nil != err {
-		return nil, err
+	if len(sig.sigma) != len(rhs.sigma) {
+		return false
 	}
 
-	return buf.Bytes(), nil
-}
-
-func (sig *Sig) GobDecode(data []byte) error {
-	sigC := new(sigEx)
-
-	buf := bytes.NewBuffer(data)
-	dec := gob.NewDecoder(buf)
-	if err := dec.Decode(sigC); nil != err {
-		return err
+	for i := range sig.sigma {
+		if !bytes.Equal(sig.sigma[i], rhs.sigma[i]) {
+			return false
+		}
 	}
 
-	sig.typecode = sigC.Typecode
-	sig.C = sigC.C
-	sig.sigma = sigC.Sigma
-
-	return nil
+	return true
 }

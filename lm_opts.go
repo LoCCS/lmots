@@ -3,7 +3,6 @@ package lmots
 import (
 	"bytes"
 	"encoding/binary"
-	"encoding/gob"
 )
 
 // domain separation fields enumerators indicating the message to hash
@@ -134,45 +133,4 @@ func (opts *LMOpts) Deserialize(buf []byte) bool {
 	opts.keyIdx = binary.BigEndian.Uint32(buf[offset:(offset + ell)])
 
 	return true
-}
-
-type lmOptsEx struct {
-	Typecode [4]byte
-	I        [key_id_len]byte
-	KeyIdx   uint32
-}
-
-func (opts LMOpts) GobEncode() ([]byte, error) {
-	// export version of opts
-	optsEx := &lmOptsEx{opts.typecode, opts.I, opts.keyIdx}
-
-	buf := new(bytes.Buffer)
-	enc := gob.NewEncoder(buf)
-	if err := enc.Encode(optsEx); nil != err {
-		return nil, err
-	}
-
-	return buf.Bytes(), nil
-}
-
-func (opts *LMOpts) GobDecode(data []byte) error {
-	dec := gob.NewDecoder(bytes.NewBuffer(data))
-
-	// export version of opts
-	optsEx := new(lmOptsEx)
-
-	if err := dec.Decode(optsEx); nil != err {
-		return err
-	}
-
-	opts.typecode = optsEx.Typecode
-	opts.I = optsEx.I
-	opts.keyIdx = optsEx.KeyIdx
-
-	return nil
-}
-
-// Type returns the typecode of this options
-func (opts *LMOpts) Type() [4]byte {
-	return opts.typecode
 }
