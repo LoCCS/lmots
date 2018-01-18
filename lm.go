@@ -12,11 +12,11 @@ import (
 	"github.com/LoCCS/lmots/hash"
 )
 
-type HashType []byte
+type HashType = []byte
 
 // PublicKey as container for public key
 type PublicKey struct {
-	*LMOpts
+	Opts *LMOpts
 	K HashType // hash of public key components
 }
 
@@ -24,7 +24,7 @@ type PublicKey struct {
 func (pk *PublicKey) Clone() *PublicKey {
 	pkC := new(PublicKey)
 
-	pkC.LMOpts = pk.LMOpts.Clone()
+	pkC.Opts = pk.Opts.Clone()
 	if nil != pk.K {
 		pkC.K = make(HashType, len(pk.K))
 		copy(pkC.K, pk.K)
@@ -40,8 +40,8 @@ func (pk *PublicKey) Equal(rhs *PublicKey) bool {
 	}
 
 	return (nil != rhs) &&
-		((pk.LMOpts == rhs.LMOpts) ||
-			((nil != pk.LMOpts) && (pk.LMOpts.Equal(rhs.LMOpts)))) &&
+		((pk.Opts == rhs.Opts) ||
+			((nil != pk.Opts) && (pk.Opts.Equal(rhs.Opts)))) &&
 		bytes.Equal(pk.K, rhs.K)
 }
 
@@ -98,7 +98,7 @@ func GenerateKey(opts *LMOpts, rng io.Reader) (*PrivateKey, error) {
 	}
 
 	// evaluate the corresponding public key
-	sk.PublicKey.LMOpts = opts.Clone()
+	sk.PublicKey.Opts = opts.Clone()
 
 	Ys := make([]HashType, METAOPTS_DEFAULT.p)
 	var numItr uint8 = (1 << METAOPTS_DEFAULT.w) - 1
@@ -120,7 +120,7 @@ func GenerateKey(opts *LMOpts, rng io.Reader) (*PrivateKey, error) {
 			}
 
 			for j := from; j < to; j++ {
-				Ys[j] = evalChaining(sk.LMOpts, uint16(j), 0, numItr, sk.x[j])
+				Ys[j] = evalChaining(sk.Opts, uint16(j), 0, numItr, sk.x[j])
 			}
 		}(i)
 	}
@@ -129,8 +129,8 @@ func GenerateKey(opts *LMOpts, rng io.Reader) (*PrivateKey, error) {
 
 	// calculate K
 	she.Reset()
-	she.Write(sk.I[:])
-	she.WriteUint32(sk.KeyIdx)
+	she.Write(sk.Opts.I[:])
+	she.WriteUint32(sk.Opts.KeyIdx)
 	she.WriteUint16(D_PBLC)
 	for j := range Ys {
 		she.Write(Ys[j])
@@ -154,7 +154,7 @@ func Sign(rng io.Reader, sk *PrivateKey, msg HashType) (*Sig, error) {
 	}
 
 	// run the chaining iterations to generate the signature
-	sig.sigma = batchChaining(sk.LMOpts, sig.C, msg, sk.x, true)
+	sig.sigma = batchChaining(sk.Opts, sig.C, msg, sk.x, true)
 
 	return sig, nil
 }
@@ -162,16 +162,16 @@ func Sign(rng io.Reader, sk *PrivateKey, msg HashType) (*Sig, error) {
 // Verify checks the signature on msg against the given public key
 func Verify(pk *PublicKey, msg HashType, sig *Sig) bool {
 	// ensure pktype=sigtype
-	if !bytes.Equal(pk.Typecode[:], sig.typecode[:]) {
+	if !bytes.Equal(pk.Opts.Typecode[:], sig.typecode[:]) {
 		return false
 	}
 
-	Ys := batchChaining(pk.LMOpts, sig.C, msg, sig.sigma, false)
+	Ys := batchChaining(pk.Opts, sig.C, msg, sig.sigma, false)
 
 	// Kc
 	sh := hash.NewShakeHashEx()
-	sh.Write(pk.I[:])
-	sh.WriteUint32(pk.KeyIdx)
+	sh.Write(pk.Opts.I[:])
+	sh.WriteUint32(pk.Opts.KeyIdx)
 	sh.WriteUint16(D_PBLC)
 	for j := range Ys {
 		sh.Write(Ys[j])

@@ -14,7 +14,7 @@ func TestPkEncoding(t *testing.T) {
 	sk, _ := GenerateKey(dummyOpts, lmrand.Reader)
 
 	pk := &sk.PublicKey
-	pk.KeyIdx = 0x1234
+	pk.Opts.KeyIdx = 0x1234
 
 	buf := new(bytes.Buffer)
 	enc := gob.NewEncoder(buf)
@@ -23,7 +23,7 @@ func TestPkEncoding(t *testing.T) {
 	}
 
 	pk2 := new(PublicKey)
-	pk2.LMOpts = new(LMOpts)
+	pk2.Opts = new(LMOpts)
 	dec := gob.NewDecoder(buf)
 	if err := dec.Decode(pk2); nil != err {
 		t.Fatal(err)
