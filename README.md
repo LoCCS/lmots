@@ -35,6 +35,7 @@ $ dep ensure
 
 <a name="usage"></a>
 ## Usage  
+Please refer to `ExampleLMS()` in `example_test.go`  
 
 <a name="contrib"></a>
 ## Contributing  
