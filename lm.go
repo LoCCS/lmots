@@ -7,8 +7,6 @@ import (
 	"runtime"
 	"sync"
 
-//	"encoding/binary"
-
 	"github.com/LoCCS/lmots/hash"
 )
 
