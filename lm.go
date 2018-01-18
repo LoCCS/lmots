@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"sync"
 
-	"encoding/binary"
+//	"encoding/binary"
 
 	"github.com/LoCCS/lmots/hash"
 )
@@ -62,10 +62,11 @@ func (sk *PrivateKey) Equal(rhs *PrivateKey) bool {
 }
 
 // Sig as container for the Winternitz one-time signature
+// export all fields to make it encodeable as Gob
 type Sig struct {
-	typecode [4]byte
+	Typecode [4]byte
 	C        []byte
-	sigma    []HashType
+	Sigma    []HashType
 }
 
 // GenerateKey generates a key pair
@@ -146,7 +147,7 @@ func Sign(rng io.Reader, sk *PrivateKey, msg HashType) (*Sig, error) {
 	sig := new(Sig)
 
 	// set type of algo
-	sig.typecode = METAOPTS_DEFAULT.typecode
+	sig.Typecode = METAOPTS_DEFAULT.typecode
 	// fetch a randomizer
 	sig.C = make([]byte, METAOPTS_DEFAULT.n)
 	if _, err := rng.Read(sig.C); nil != err {
@@ -154,7 +155,7 @@ func Sign(rng io.Reader, sk *PrivateKey, msg HashType) (*Sig, error) {
 	}
 
 	// run the chaining iterations to generate the signature
-	sig.sigma = batchChaining(sk.Opts, sig.C, msg, sk.x, true)
+	sig.Sigma = batchChaining(sk.Opts, sig.C, msg, sk.x, true)
 
 	return sig, nil
 }
@@ -162,11 +163,11 @@ func Sign(rng io.Reader, sk *PrivateKey, msg HashType) (*Sig, error) {
 // Verify checks the signature on msg against the given public key
 func Verify(pk *PublicKey, msg HashType, sig *Sig) bool {
 	// ensure pktype=sigtype
-	if !bytes.Equal(pk.Opts.Typecode[:], sig.typecode[:]) {
+	if !bytes.Equal(pk.Opts.Typecode[:], sig.Typecode[:]) {
 		return false
 	}
 
-	Ys := batchChaining(pk.Opts, sig.C, msg, sig.sigma, false)
+	Ys := batchChaining(pk.Opts, sig.C, msg, sig.Sigma, false)
 
 	// Kc
 	sh := hash.NewShakeHashEx()
@@ -227,54 +228,6 @@ func batchChaining(opts *LMOpts, C []byte, msg HashType,
 	return outs
 }
 
-//Serialize encodes the signature
-func (sig *Sig) Serialize() []byte {
-
-	cLen := len(sig.C)
-	sNum := len(sig.sigma)
-	size := 0
-	if sNum > 0 && sig.sigma[0] != nil {
-		size = len(sig.sigma[0])
-	}
-	sigBytes := make([]byte, 4+2+cLen+4+sNum*size)
-	copy(sigBytes[0:4], sig.typecode[:])
-	binary.LittleEndian.PutUint16(sigBytes[4:6], uint16(cLen))
-	copy(sigBytes[6:6+cLen], sig.C)
-	offset := 6 + cLen
-	binary.LittleEndian.PutUint16(sigBytes[offset:offset+2], uint16(sNum))
-	binary.LittleEndian.PutUint16(sigBytes[offset+2:offset+4], uint16(size))
-	offset += 4
-	for _, s := range sig.sigma {
-		copy(sigBytes[offset:offset+size], s)
-		offset += size
-	}
-	return sigBytes
-}
-
-//Deserialize decodes the signature from bytes
-func DeserializeSig(sigBytes []byte) *Sig {
-	sig := &Sig{}
-	sig.typecode[0] = sigBytes[0]
-	sig.typecode[1] = sigBytes[1]
-	sig.typecode[2] = sigBytes[2]
-	sig.typecode[3] = sigBytes[3]
-
-	cLen := binary.LittleEndian.Uint16(sigBytes[4:6])
-	sig.C = make([]byte, cLen)
-	copy(sig.C, sigBytes[6:6+cLen])
-	offset := int(6 + cLen)
-	sNum := int(binary.LittleEndian.Uint16(sigBytes[offset : offset+2]))
-	size := int(binary.LittleEndian.Uint16(sigBytes[offset+2 : offset+4]))
-	offset += 4
-	sigma := make([]HashType, sNum)
-	for i := 0; i < int(sNum); i++ {
-		sigma[i] = sigBytes[offset : int(offset)+size]
-		offset += size
-	}
-	sig.sigma = sigma
-	return sig
-}
-
 // utilities functions to remove sooner or later
 func (sig *Sig) Equal(rhs *Sig) bool {
 	if nil == rhs {
@@ -283,19 +236,19 @@ func (sig *Sig) Equal(rhs *Sig) bool {
 	if sig == rhs {
 		return true
 	}
-	if !bytes.Equal(sig.typecode[:], rhs.typecode[:]) {
+	if !bytes.Equal(sig.Typecode[:], rhs.Typecode[:]) {
 		return false
 	}
 	if !bytes.Equal(sig.C, rhs.C) {
 		return false
 	}
 
-	if len(sig.sigma) != len(rhs.sigma) {
+	if len(sig.Sigma) != len(rhs.Sigma) {
 		return false
 	}
 
-	for i := range sig.sigma {
-		if !bytes.Equal(sig.sigma[i], rhs.sigma[i]) {
+	for i := range sig.Sigma {
+		if !bytes.Equal(sig.Sigma[i], rhs.Sigma[i]) {
 			return false
 		}
 	}

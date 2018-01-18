@@ -37,7 +37,7 @@ func TestPkEncoding(t *testing.T) {
 func TestSigEncoding(t *testing.T) {
 	// make a dummy sig
 	sig := new(Sig)
-	if _, err := rand.Read(sig.typecode[:]); nil != err {
+	if _, err := rand.Read(sig.Typecode[:]); nil != err {
 		t.Fatal(err)
 	}
 
@@ -46,11 +46,11 @@ func TestSigEncoding(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	sig.sigma = make([]HashType, 16)
-	for i := range sig.sigma {
-		sig.sigma[i] = make(HashType, 16)
+	sig.Sigma = make([]HashType, 16)
+	for i := range sig.Sigma {
+		sig.Sigma[i] = make(HashType, 16)
 
-		if _, err := rand.Read(sig.sigma[i]); nil != err {
+		if _, err := rand.Read(sig.Sigma[i]); nil != err {
 			t.Fatal(err)
 		}
 	}
@@ -69,21 +69,21 @@ func TestSigEncoding(t *testing.T) {
 	}
 
 	// check typecode
-	if !bytes.Equal(sig.typecode[:], sigC.typecode[:]) {
-		t.Fatalf("mismatch typecode: want %x, got %x", sig.typecode[:], sigC.typecode[:])
+	if !bytes.Equal(sig.Typecode[:], sigC.Typecode[:]) {
+		t.Fatalf("mismatch typecode: want %x, got %x", sig.Typecode[:], sigC.Typecode[:])
 	}
 	// check randomizer
 	if !bytes.Equal(sig.C, sigC.C) {
 		t.Fatalf("mismatch C: want %x, got %x", sig.C, sigC.C)
 	}
 	// check sigma
-	if len(sig.sigma) != len(sigC.sigma) {
-		t.Fatalf("mismatch len(sigma): want %v, got %v", len(sig.sigma), len(sigC.sigma))
+	if len(sig.Sigma) != len(sigC.Sigma) {
+		t.Fatalf("mismatch len(sigma): want %v, got %v", len(sig.Sigma), len(sigC.Sigma))
 	}
 	// check sigma[i]
-	for i := range sig.sigma {
-		if !bytes.Equal(sig.sigma[i], sigC.sigma[i]) {
-			t.Fatalf("mismatch sigma[%v], want %x, got %x", i, sig.sigma[i], sigC.sigma[i])
+	for i := range sig.Sigma {
+		if !bytes.Equal(sig.Sigma[i], sigC.Sigma[i]) {
+			t.Fatalf("mismatch sigma[%v], want %x, got %x", i, sig.Sigma[i], sigC.Sigma[i])
 		}
 	}
 
