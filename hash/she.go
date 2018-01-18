@@ -28,7 +28,7 @@ func (sh *ShakeHashEx) WriteUint32(x uint32) {
 	sh.Write(buf[:])
 }
 
-// WriteUint32 takes in an uint16 to update its
+// WriteUint16 takes in an uint16 to update its
 // internal state
 func (sh *ShakeHashEx) WriteUint16(x uint16) {
 	var buf [2]byte
@@ -37,7 +37,7 @@ func (sh *ShakeHashEx) WriteUint16(x uint16) {
 	sh.Write(buf[:])
 }
 
-// WriteUint32 takes in an uint8 to update its
+// WriteUint8 takes in an uint8 to update its
 // internal state
 func (sh *ShakeHashEx) WriteUint8(x uint8) {
 	sh.Write([]byte{uint8(x)})
