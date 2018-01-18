@@ -19,9 +19,9 @@ func BenchmarkLMSStdOps(b *testing.B) {
 	msg := sha3.Sum256([]byte("helo Leighton-Micali Signatures"))
 
 	dummyOpts := new(LMOpts)
-	dummyOpts.typecode = METAOPTS_DEFAULT.typecode
+	dummyOpts.Typecode = METAOPTS_DEFAULT.typecode
 	for i := 0; i < b.N; i++ {
-		dummyOpts.SetKeyIdx(uint32(i))
+		dummyOpts.KeyIdx = uint32(i)
 		sk, err := GenerateKey(dummyOpts, rand.Reader)
 
 		sig, err := Sign(rand.Reader, sk, msg[:])

@@ -11,7 +11,7 @@ func TestLMSig(t *testing.T) {
 	hash := sha3.Sum256([]byte("hello Leighton-Micali Signature"))
 
 	dummyOpts := new(LMOpts)
-	dummyOpts.typecode = METAOPTS_DEFAULT.typecode
+	dummyOpts.Typecode = METAOPTS_DEFAULT.typecode
 	sk, _ := GenerateKey(dummyOpts, rand.Reader)
 
 	sig, err := Sign(rand.Reader, sk, hash[:])
@@ -28,7 +28,7 @@ func TestLMSigBadPk(t *testing.T) {
 	hash := sha3.Sum256([]byte("hello Leighton-Micali Signature"))
 
 	dummyOpts := new(LMOpts)
-	dummyOpts.typecode = METAOPTS_DEFAULT.typecode
+	dummyOpts.Typecode = METAOPTS_DEFAULT.typecode
 	sk, _ := GenerateKey(dummyOpts, rand.Reader)
 
 	sig, err := Sign(rand.Reader, sk, hash[:])

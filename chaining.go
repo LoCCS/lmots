@@ -17,7 +17,7 @@ func evalChaining(opts *LMOpts, i uint16,
 	// security prefix: I|q(4)|i(2)|j(1)
 	prefix := make([]byte, key_id_len+4+2+1)
 	copy(prefix, opts.I[:])
-	binary.BigEndian.PutUint32(prefix[key_id_len:], opts.keyIdx)
+	binary.BigEndian.PutUint32(prefix[key_id_len:], opts.KeyIdx)
 	binary.BigEndian.PutUint16(prefix[key_id_len+4:], i)
 
 	sh := hash.NewShakeHashEx()

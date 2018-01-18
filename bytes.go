@@ -37,7 +37,7 @@ func extendMsg(opts *LMOpts, C []byte, msg []byte, w, ls uint8) []byte {
 
 	// extend hash as Q = H(I|q|D_MESG|C|msg)
 	sh.Write(opts.I[:])
-	sh.WriteUint32(opts.keyIdx)
+	sh.WriteUint32(opts.KeyIdx)
 	sh.WriteUint16(D_MESG)
 	sh.Write(C)
 	sh.Write(msg)

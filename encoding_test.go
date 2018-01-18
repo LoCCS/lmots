@@ -9,46 +9,12 @@ import (
 	lmrand "github.com/LoCCS/lmots/rand"
 )
 
-func TestLMOptsEncoding(t *testing.T) {
-	opts := NewLMOpts()
-	opts.keyIdx = 0x1234
-	opts.I[2] = 0x56
-
-	buf := new(bytes.Buffer)
-	enc := gob.NewEncoder(buf)
-	if err := enc.Encode(opts); nil != err {
-		t.Fatal(err)
-	}
-
-	opts2 := new(LMOpts)
-	dec := gob.NewDecoder(buf)
-	if err := dec.Decode(opts2); nil != err {
-		t.Fatal(err)
-	}
-
-	if !bytes.Equal(opts.typecode[:], opts2.typecode[:]) {
-		t.Fatalf("invalid typecode: want %x, got %x",
-			opts.typecode[:], opts2.typecode[:])
-	}
-
-	if !bytes.Equal(opts.I[:], opts2.I[:]) {
-		t.Fatalf("invalid key id: want %x, got %x",
-			opts.I[:], opts2.I[:])
-
-	}
-
-	if opts.keyIdx != opts2.keyIdx {
-		t.Fatalf("invalid key index: want %v, got %v",
-			opts.keyIdx, opts2.keyIdx)
-	}
-}
-
 func TestPkEncoding(t *testing.T) {
 	dummyOpts := NewLMOpts()
 	sk, _ := GenerateKey(dummyOpts, lmrand.Reader)
 
 	pk := &sk.PublicKey
-	pk.keyIdx = 0x1234
+	pk.KeyIdx = 0x1234
 
 	buf := new(bytes.Buffer)
 	enc := gob.NewEncoder(buf)

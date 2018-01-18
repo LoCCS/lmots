@@ -2,36 +2,44 @@ package lmots
 
 import (
 	"bytes"
+	"encoding/gob"
 	"testing"
 )
 
 func TestLMOpts(t *testing.T) {
 	opts := &LMOpts{
-		typecode: [4]byte{1, 2, 3, 4},
-		keyIdx:   0x1234,
+		Typecode: [4]byte{1, 2, 3, 4},
+		KeyIdx:   0x1234,
 	}
 
 	optsC := opts.Clone()
-	optsC.typecode[2] = 0x56
+	optsC.Typecode[2] = 0x56
 
-	if optsC.typecode[2] == opts.typecode[2] {
-		t.Fatalf("want %v, got %v", opts.typecode[2], optsC.typecode[2])
+	if optsC.Typecode[2] == opts.Typecode[2] {
+		t.Fatalf("want %v, got %v", opts.Typecode[2], optsC.Typecode[2])
 	}
 }
 
-func TestLMOptsSerialize(t *testing.T) {
+func TestLMOptsEncoding(t *testing.T) {
 	opts := NewLMOpts()
-	opts.keyIdx = 0x1234
+	opts.KeyIdx = 0x1234
 	opts.I[2] = 0x56
 
-	buf := opts.Serialize()
+	buf := new(bytes.Buffer)
+	enc := gob.NewEncoder(buf)
+	if err := enc.Encode(opts); nil != err {
+		t.Fatal(err)
+	}
 
 	opts2 := new(LMOpts)
-	opts2.Deserialize(buf)
+	dec := gob.NewDecoder(buf)
+	if err := dec.Decode(opts2); nil != err {
+		t.Fatal(err)
+	}
 
-	if !bytes.Equal(opts.typecode[:], opts2.typecode[:]) {
+	if !bytes.Equal(opts.Typecode[:], opts2.Typecode[:]) {
 		t.Fatalf("invalid typecode: want %x, got %x",
-			opts.typecode[:], opts2.typecode[:])
+			opts.Typecode[:], opts2.Typecode[:])
 	}
 
 	if !bytes.Equal(opts.I[:], opts2.I[:]) {
@@ -40,8 +48,8 @@ func TestLMOptsSerialize(t *testing.T) {
 
 	}
 
-	if opts.keyIdx != opts2.keyIdx {
+	if opts.KeyIdx != opts2.KeyIdx {
 		t.Fatalf("invalid key index: want %v, got %v",
-			opts.keyIdx, opts2.keyIdx)
+			opts.KeyIdx, opts2.KeyIdx)
 	}
 }

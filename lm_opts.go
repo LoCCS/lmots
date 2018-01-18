@@ -2,7 +2,6 @@ package lmots
 
 import (
 	"bytes"
-	"encoding/binary"
 )
 
 // domain separation fields enumerators indicating the message to hash
@@ -30,11 +29,11 @@ const (
 type LMOpts struct {
 	// big-endian order bytes for LMOTS_SHAKE{shake}_N{n}_W{w}
 	// typecodes defined in params.go
-	typecode [4]byte
+	Typecode [4]byte
 	// key pair identifier
 	I [key_id_len]byte
 	// index of the current key pair
-	keyIdx uint32
+	KeyIdx uint32
 }
 
 // NewLMOpts makes an LM-OTS option with default `typecode`
@@ -42,8 +41,8 @@ type LMOpts struct {
 func NewLMOpts() *LMOpts {
 	opts := new(LMOpts)
 
-	opts.typecode = METAOPTS_DEFAULT.typecode
-	opts.keyIdx = 0
+	opts.Typecode = METAOPTS_DEFAULT.typecode
+	opts.KeyIdx = 0
 
 	return opts
 }
@@ -60,77 +59,6 @@ func (opts *LMOpts) Equal(rhs *LMOpts) bool {
 	if opts == rhs {
 		return true
 	}
-	return (nil != rhs) && bytes.Equal(opts.typecode[:], rhs.typecode[:]) &&
-		bytes.Equal(opts.I[:], rhs.I[:]) && (opts.keyIdx == rhs.keyIdx)
-}
-
-// KeyIdx returns the index assigned to this key
-func (opts *LMOpts) KeyIdx() uint32 {
-	return opts.keyIdx
-}
-
-// SetKeyIdx sets the index of underlying key
-func (opts *LMOpts) SetKeyIdx(i uint32) {
-	opts.keyIdx = i
-}
-
-// SetKeyID sets the identifier for the underlying key
-func (opts *LMOpts) SetKeyID(I []byte) {
-	if len(I) != key_id_len {
-		panic("invalid key id length")
-	}
-
-	copy(opts.I[:], I)
-}
-
-// Serialize encodes the given option into byte slice
-func (opts *LMOpts) Serialize() []byte {
-	buf := make([]byte, 1+4+1+key_id_len+1+4)
-	offset := 0
-
-	// len(typecode)|typecode
-	buf[offset] = 4
-	offset++
-	copy(buf[offset:], opts.typecode[:])
-	offset += 4
-
-	// len(I)|I
-	buf[offset] = uint8(key_id_len)
-	offset++
-	copy(buf[offset:], opts.I[:])
-	offset += key_id_len
-
-	// len(keyIdx)|keyIdx
-	buf[offset] = 4
-	offset++
-	binary.BigEndian.PutUint32(buf[offset:], opts.keyIdx)
-
-	return buf
-}
-
-// Deserialize initialises the option with the given byte slice
-func (opts *LMOpts) Deserialize(buf []byte) bool {
-	var offset uint8
-
-	ell := buf[offset]
-	offset += 1
-	if 4 != ell {
-		return false
-	}
-	copy(opts.typecode[:], buf[offset:(offset+ell)])
-	offset += ell
-
-	ell = buf[offset]
-	offset++
-	if key_id_len != ell {
-		return false
-	}
-	copy(opts.I[:], buf[offset:(offset+ell)])
-	offset += ell
-
-	ell = buf[offset]
-	offset++
-	opts.keyIdx = binary.BigEndian.Uint32(buf[offset:(offset + ell)])
-
-	return true
+	return (nil != rhs) && bytes.Equal(opts.Typecode[:], rhs.Typecode[:]) &&
+		bytes.Equal(opts.I[:], rhs.I[:]) && (opts.KeyIdx == rhs.KeyIdx)
 }

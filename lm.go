@@ -83,7 +83,7 @@ func GenerateKey(opts *LMOpts, rng io.Reader) (*PrivateKey, error) {
 			// I
 			she.Write(opts.I[:])
 			// q
-			she.WriteUint32(opts.keyIdx)
+			she.WriteUint32(opts.KeyIdx)
 			// j
 			she.WriteUint16(uint16(j))
 			// dummy byte
@@ -130,7 +130,7 @@ func GenerateKey(opts *LMOpts, rng io.Reader) (*PrivateKey, error) {
 	// calculate K
 	she.Reset()
 	she.Write(sk.I[:])
-	she.WriteUint32(sk.keyIdx)
+	she.WriteUint32(sk.KeyIdx)
 	she.WriteUint16(D_PBLC)
 	for j := range Ys {
 		she.Write(Ys[j])
@@ -162,7 +162,7 @@ func Sign(rng io.Reader, sk *PrivateKey, msg HashType) (*Sig, error) {
 // Verify checks the signature on msg against the given public key
 func Verify(pk *PublicKey, msg HashType, sig *Sig) bool {
 	// ensure pktype=sigtype
-	if !bytes.Equal(pk.typecode[:], sig.typecode[:]) {
+	if !bytes.Equal(pk.Typecode[:], sig.typecode[:]) {
 		return false
 	}
 
@@ -171,7 +171,7 @@ func Verify(pk *PublicKey, msg HashType, sig *Sig) bool {
 	// Kc
 	sh := hash.NewShakeHashEx()
 	sh.Write(pk.I[:])
-	sh.WriteUint32(pk.keyIdx)
+	sh.WriteUint32(pk.KeyIdx)
 	sh.WriteUint16(D_PBLC)
 	for j := range Ys {
 		sh.Write(Ys[j])
