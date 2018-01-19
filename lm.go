@@ -10,12 +10,13 @@ import (
 	"github.com/LoCCS/lmots/hash"
 )
 
+// HashType alias a byte slice to ease understanding and typing
 type HashType = []byte
 
 // PublicKey as container for public key
 type PublicKey struct {
 	Opts *LMOpts
-	K HashType // hash of public key components
+	K    HashType // hash of public key components
 }
 
 // Clone makes a copy of this pk
@@ -43,11 +44,11 @@ func (pk *PublicKey) Equal(rhs *PublicKey) bool {
 		bytes.Equal(pk.K, rhs.K)
 }
 
-// PrivateKey as container for private key,
+// PrivateKey as a container for private key,
 // it also embeds its corresponding public key
 type PrivateKey struct {
 	PublicKey
-	x []HashType
+	X []HashType
 }
 
 // Equal checks if this key equals to the given one
@@ -70,14 +71,14 @@ type Sig struct {
 // GenerateKey generates a key pair
 func GenerateKey(opts *LMOpts, rng io.Reader) (*PrivateKey, error) {
 	sk := new(PrivateKey)
-	sk.x = make([]HashType, METAOPTS_DEFAULT.p)
+	sk.X = make([]HashType, METAOPTS_DEFAULT.p)
 
 	she := hash.NewShakeHashEx()
 	{
 		seed := make([]byte, METAOPTS_DEFAULT.n)
 		rng.Read(seed)
 
-		for j := range sk.x {
+		for j := range sk.X {
 			she.Reset()
 			// I
 			she.Write(opts.I[:])
@@ -91,8 +92,8 @@ func GenerateKey(opts *LMOpts, rng io.Reader) (*PrivateKey, error) {
 			she.Write(seed)
 
 			// read out sk[j]
-			sk.x[j] = make(HashType, METAOPTS_DEFAULT.n)
-			she.Read(sk.x[j])
+			sk.X[j] = make(HashType, METAOPTS_DEFAULT.n)
+			she.Read(sk.X[j])
 		}
 	}
 
@@ -119,7 +120,7 @@ func GenerateKey(opts *LMOpts, rng io.Reader) (*PrivateKey, error) {
 			}
 
 			for j := from; j < to; j++ {
-				Ys[j] = evalChaining(sk.Opts, uint16(j), 0, numItr, sk.x[j])
+				Ys[j] = evalChaining(sk.Opts, uint16(j), 0, numItr, sk.X[j])
 			}
 		}(i)
 	}
@@ -153,7 +154,7 @@ func Sign(rng io.Reader, sk *PrivateKey, msg HashType) (*Sig, error) {
 	}
 
 	// run the chaining iterations to generate the signature
-	sig.Sigma = batchChaining(sk.Opts, sig.C, msg, sk.x, true)
+	sig.Sigma = batchChaining(sk.Opts, sig.C, msg, sk.X, true)
 
 	return sig, nil
 }
@@ -224,32 +225,4 @@ func batchChaining(opts *LMOpts, C []byte, msg HashType,
 	wg.Wait()
 
 	return outs
-}
-
-// utilities functions to remove sooner or later
-func (sig *Sig) Equal(rhs *Sig) bool {
-	if nil == rhs {
-		return false
-	}
-	if sig == rhs {
-		return true
-	}
-	if !bytes.Equal(sig.Typecode[:], rhs.Typecode[:]) {
-		return false
-	}
-	if !bytes.Equal(sig.C, rhs.C) {
-		return false
-	}
-
-	if len(sig.Sigma) != len(rhs.Sigma) {
-		return false
-	}
-
-	for i := range sig.Sigma {
-		if !bytes.Equal(sig.Sigma[i], rhs.Sigma[i]) {
-			return false
-		}
-	}
-
-	return true
 }

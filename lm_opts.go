@@ -1,8 +1,6 @@
 package lmots
 
-import (
-	"bytes"
-)
+import "bytes"
 
 // domain separation fields enumerators indicating the message to hash
 // - D_PBLC = 0x8080 when computing the hash of all of the iterates
