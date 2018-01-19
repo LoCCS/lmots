@@ -1,6 +1,6 @@
 # The Leighton-Micali One-Time Signature [LM-OTS]  
 
-![version tag](https://img.shields.io/badge/lmots-v1.5-blue.svg) 
+![version tag](https://img.shields.io/badge/lmots-v2.0-blue.svg) 
 ![build status](https://img.shields.io/badge/build-passing-brightgreen.svg)
 [![license tag](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)  
 
@@ -35,7 +35,7 @@ $ dep ensure
 
 <a name="usage"></a>
 ## Usage  
-Please refer to `ExampleLMS()` in `example_test.go`  
+Please refer to `ExampleLMS()` in [example_test.go](example_test.go)    
 
 <a name="contrib"></a>
 ## Contributing  
