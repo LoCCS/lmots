@@ -161,25 +161,9 @@ func Sign(rng io.Reader, sk *PrivateKey, msg HashType) (*Sig, error) {
 
 // Verify checks the signature on msg against the given public key
 func Verify(pk *PublicKey, msg HashType, sig *Sig) bool {
-	// ensure pktype=sigtype
-	if !bytes.Equal(pk.Opts.Typecode[:], sig.Typecode[:]) {
-		return false
-	}
+	Kc, err := RecoverK(pk.Opts, msg, sig)
 
-	Ys := batchChaining(pk.Opts, sig.C, msg, sig.Sigma, false)
-
-	// Kc
-	sh := hash.NewShakeHashEx()
-	sh.Write(pk.Opts.I[:])
-	sh.WriteUint32(pk.Opts.KeyIdx)
-	sh.WriteUint16(D_PBLC)
-	for j := range Ys {
-		sh.Write(Ys[j])
-	}
-	Kc := make(HashType, METAOPTS_DEFAULT.n)
-	sh.Read(Kc)
-
-	return bytes.Equal(Kc, pk.K)
+	return (nil == err) && bytes.Equal(Kc, pk.K)
 }
 
 // batchChaining evaluates Winternitz chain in batch
@@ -225,4 +209,27 @@ func batchChaining(opts *LMOpts, C []byte, msg HashType,
 	wg.Wait()
 
 	return outs
+}
+
+// RecoverK recovers the K component for a public key
+func RecoverK(opts *LMOpts, msg HashType, sig *Sig) (HashType, error) {
+	// ensure type matches
+	if !bytes.Equal(opts.Typecode[:], sig.Typecode[:]) {
+		return nil, errors.New("typecode mismatches")
+	}
+
+	Ys := batchChaining(opts, sig.C, msg, sig.Sigma, false)
+
+	// Kc
+	sh := hash.NewShakeHashEx()
+	sh.Write(opts.I[:])
+	sh.WriteUint32(opts.KeyIdx)
+	sh.WriteUint16(D_PBLC)
+	for j := range Ys {
+		sh.Write(Ys[j])
+	}
+	Kc := make(HashType, METAOPTS_DEFAULT.n)
+	sh.Read(Kc)
+
+	return Kc, nil
 }
