@@ -1,6 +1,9 @@
 package lmots
 
-import "bytes"
+import (
+	"bytes"
+	"crypto/rand"
+)
 
 // domain separation fields enumerators indicating the message to hash
 // - D_PBLC = 0x8080 when computing the hash of all of the iterates
@@ -40,6 +43,11 @@ func NewLMOpts() *LMOpts {
 	opts := new(LMOpts)
 
 	opts.Typecode = METAOPTS_DEFAULT.typecode
+
+	if _, err := rand.Read(opts.I[:]); nil != err {
+		return nil
+	}
+
 	opts.KeyIdx = 0
 
 	return opts
